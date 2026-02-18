@@ -41,7 +41,7 @@ class OfferListSerializer(serializers.ModelSerializer):
 
     min_price = serializers.SerializerMethodField()
     min_delivery_time = serializers.SerializerMethodField()
-    user_detail = serializers.SerializerMethodField()
+    user_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
@@ -59,20 +59,20 @@ class OfferListSerializer(serializers.ModelSerializer):
             "user_details",
         ]
 
-        def get_min_price(self, obj):
-            return obj.details.aggregate(v=Min("price"))["v"]
-            
 
-        def get_min_delivery_timer(self, obj):
-            return obj.details.aggregate(v=Min('delivery_time_in_days'))['v']
+    def get_min_price(self, obj):
+            return getattr(obj, "min_price", None)
+
+    def get_min_delivery_time(self, obj):
+            return getattr(obj, "min_delivery_time", None)
         
-        def get_user_details(self, obj):
-            profile = getattr(obj.user, 'profile', None)
-            return {
-                'first_name': getattr(profile, 'first_name', '') or '',
-                'last_name': getattr(profile, 'last_name', '') or '',
-                'username': obj.user.username,
-            }
+    def get_user_details(self, obj):
+        profile = getattr(obj.user, 'profile', None)
+        return {
+            'first_name': getattr(profile, 'first_name', '') or '',
+            'last_name': getattr(profile, 'last_name', '') or '',
+            'username': obj.user.username,
+        }
         
 
 
