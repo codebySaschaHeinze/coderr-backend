@@ -62,3 +62,28 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
             if data.get(key) is None:
                 data[key] = ""
         return data
+    
+
+class ProfileDetailSerializer(serializers.ModelSerializer):
+    
+    user = serializers.IntegerField(source='user.id', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    type = serializers.CharField(source="user.type", read_only=True)
+
+    class Meta:
+        model = Profile
+        fields = [
+            "user",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "file",
+            "location",
+            "tel",
+            "description",
+            "working_hours",
+            "type",
+        ]
+        read_only_fields = ("user", "username", "email", "type")
