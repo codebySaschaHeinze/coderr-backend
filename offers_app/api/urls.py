@@ -1,3 +1,8 @@
 from django.urls import path
 
-urlpatterns = []
+from .views import OfferListCreateView
+
+
+urlpatterns = [
+    path('offers/', OfferListCreateView.as_view(), name='offers'),
+]
