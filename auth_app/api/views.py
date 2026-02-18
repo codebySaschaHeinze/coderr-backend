@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 
+from profile_app.models import Profile
 from .serializers import RegistrationSerializer, LoginSerializer
 
 
@@ -16,7 +17,8 @@ class RegistrationView(APIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
-        token, _ = Token.objects.get_or_create(user=user)
+        Profile.objects.create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)   
 
         return Response(
             {
