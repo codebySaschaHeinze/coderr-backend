@@ -110,3 +110,64 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['details'] = OfferDetailSerializer(instance.details.all(), many=True).data
         return data
+    
+
+class OfferUpdateSerializer(serializers.ModelSerializer):
+    details = OfferDetailSerializer(many=True, required=False)
+
+    class Meta:
+        model = Offer
+        fields = ["id", "title", "image", "description", "details"]
+
+    def update(self, instance, validated_data):
+        details_data = validated_data.pop("details", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if details_data is not None:
+            details_by_type = {d.offer_type: d for d in instance.details.all()}
+            for d in details_data:
+                offer_type = d.get("offer_type")
+                if not offer_type or offer_type not in details_by_type:
+                    raise serializers.ValidationError(
+                        {"details": "offer_type muss mitgegeben werden (basic/standard/premium)."}
+                    )
+                detail_obj = details_by_type[offer_type]
+                for k, v in d.items():
+                    setattr(detail_obj, k, v)
+                detail_obj.save()
+
+        return instance
+
+  
+class OfferDetailViewSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField(source="user.id", read_only=True)
+    details = OfferDetailLinkSerializer(many=True, read_only=True)
+
+    min_price = serializers.SerializerMethodField()
+    min_delivery_time = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Offer
+        fields = [
+            "id",
+            "user",
+            "title",
+            "image",
+            "description",
+            "created_at",
+            "updated_at",
+            "details",
+            "min_price",
+            "min_delivery_time",
+        ]
+
+    def get_min_price(self, obj):
+        return getattr(obj, "min_price", None)
+
+    def get_min_delivery_time(self, obj):
+        return getattr(obj, "min_delivery_time", None)
+    
+
