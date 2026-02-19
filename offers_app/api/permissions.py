@@ -12,6 +12,6 @@ class IsBusinessUser(BasePermission):
 class IsOfferOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         return bool(
-            request.user and
-            request.user.is_authenticated and
-            obj.user_id == request.user.id)
+            request.user 
+            and request.user.is_authenticated 
+            and obj.user_id == request.user.id)
