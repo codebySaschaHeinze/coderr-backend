@@ -1,8 +1,7 @@
 from django.db.models import Min
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from rest_framework import generics, permissions
+from rest_framework import filters, generics, permissions
 
 from offers_app.models import Offer, OfferDetail
 from .filters import OfferFilter
