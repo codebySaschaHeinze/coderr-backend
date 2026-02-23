@@ -85,5 +85,6 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
             "description",
             "working_hours",
             "type",
+            'created_at',
         ]
-        read_only_fields = ("user", "username", "email", "type")
+        read_only_fields = ("user", "username", "email", "type", "created_at")
