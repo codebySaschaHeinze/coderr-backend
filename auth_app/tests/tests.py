@@ -33,22 +33,22 @@ class AuthTests(APITestCase):
 
     def test_login_success_returns_token_and_user_fields_returns_200(self):
         User.objects.create_user(
-            username="User1",
-            email="user@1.com",
-            password="test123",
-            type="customer",
+            username='User1',
+            email='user@1.com',
+            password='test123',
+            type='customer',
         )
 
-        login_url = reverse("login")
+        login_url = reverse('login')
         res = self.client.post(
             login_url,
-            {"username": "User1", "password": "test123"},
+            {'username': 'User1', 'password': 'test123'},
             format="json",
         )
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
-        self.assertCountEqual(res.data.keys(), ["token", "username", "email", "user_id"])
-        self.assertTrue(res.data["token"])
+        self.assertCountEqual(res.data.keys(), ['token', 'username', 'email', 'user_id'])
+        self.assertTrue(res.data['token'])
 
     def test_login_with_wrong_password_returns_400(self):
         User.objects.create_user(
@@ -99,16 +99,16 @@ class AuthTests(APITestCase):
 
     def test_login_unknown_user_returns_400(self):
         User.objects.create_user(
-            username="Existing",
-            email="ex@mail.de",
-            password="correctPW123",
-            type="customer",
+            username='Existing',
+            email='ex@mail.de',
+            password='correctPW123',
+            type='customer',
         )
 
-        login_url = reverse("login")
+        login_url = reverse('login')
         res = self.client.post(
             login_url,
-            {"username": "DoesNotExist", "password": "whatever"},
+            {'username': 'DoesNotExist', 'password': 'whatever'},
             format="json",
         )
 
