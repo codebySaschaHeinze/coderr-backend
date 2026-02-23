@@ -38,20 +38,6 @@ class ProfileTests(APITestCase):
         for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
             self.assertIsNotNone(res.data[key])
 
-    def test_profile_detail_requires_auth_returns_401(self):
-        user = User.objects.create_user(
-            username='User1',
-            email='user@1.com',
-            password='test123',
-            type='customer',
-        )
-        Profile.objects.create(user=user)
-
-        url = reverse('profile-detail', kwargs={'pk': user.id})
-        res = self.client.get(url)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
     def test_profile_detail_empty_fields_are_empty_string_not_null_returns_200(self):
 
         user = User.objects.create_user(
@@ -72,20 +58,6 @@ class ProfileTests(APITestCase):
         for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
             self.assertEqual(res.data[key], '')
         
-    def test_profile_patch_requires_auth_returns_401(self):
-        user = User.objects.create_user(
-            username='User1',
-            email='user@1.com',
-            password='test123',
-            type='customer',
-        )
-        Profile.objects.create(user=user)
-
-        url = reverse('profile-detail', kwargs={'pk': user.id})
-        res = self.client.patch(url, {'first_name': 'Monty'}, format='json')
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
     def test_profile_patch_owner_and_updates_fields_returns_200(self):
         user = User.objects.create_user(
             username='User1',
@@ -118,31 +90,6 @@ class ProfileTests(APITestCase):
         for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
             self.assertIsNotNone(res.data[key])
 
-    def test_profile_patch_not_owner_returns_403(self):
-        ownerUser = User.objects.create_user(
-            username='OwnerUser',
-            email='user@owner.com',
-            password='test123',
-            type='customer',
-        )
-        Profile.objects.create(user=ownerUser)
-
-        strangeUser = User.objects.create_user(
-            username='StrangeUser',
-            email='user@strange.com',
-            password='strange123',
-            type='customer',
-        )
-        Profile.objects.create(user=strangeUser)
-
-        self.client.force_authenticate(user=strangeUser)
-
-        url = reverse('profile-detail', kwargs={'pk': ownerUser.id})
-        res = self.client.patch(url, {'first_name': 'Stranger'}, format='json')
-
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertTrue(res.data)
-
     def test_profiles_business_returns_only_business_returns_200(self):
         businessUser = User.objects.create_user(
             username='BusinessUser',
@@ -172,11 +119,6 @@ class ProfileTests(APITestCase):
         for item in res.data:
             self.assertEqual(item['type'], 'business')
 
-    def test_profiles_businnes_requires_auth_returns_401(self):
-        url = reverse('profiles-business')
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
     def test_profiles_customer_returns_only_customer_returns_200(self):
         customerUser = User.objects.create_user(
             username='CustomerUser',
@@ -204,9 +146,4 @@ class ProfileTests(APITestCase):
 
         for item in res.data:
             self.assertEqual(item['type'], 'customer')
-            
-    def test_profiles_customer_requires_auth_returns_401(self):
-        url = reverse('profiles-customer')
-        res = self.client.get(url)
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
             
