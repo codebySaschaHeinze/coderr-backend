@@ -12,12 +12,12 @@ from .serializers import (
 
 
 class ProfileDetailView(generics.RetrieveUpdateAPIView):
-    queryset = Profile.objects.select_related("user")
+    queryset = Profile.objects.select_related('user')
     serializer_class = ProfileDetailSerializer
     permission_classes = [IsProfileOwnerOrReadOnly]
 
     def get_object(self):
-        profile = get_object_or_404(self.queryset, user_id=self.kwargs["pk"])
+        profile = get_object_or_404(self.queryset, user_id=self.kwargs['pk'])
         self.check_object_permissions(self.request, profile)
         return profile
 
@@ -29,7 +29,7 @@ class BusinessProfilesListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Profile.objects.select_related("user").filter(user__type="business")
+        return Profile.objects.select_related('user').filter(user__type='business')
     
 
 class CustomerProfilesListView(generics.ListAPIView):
@@ -39,4 +39,4 @@ class CustomerProfilesListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Profile.objects.select_related("user").filter(user__type="customer")
+        return Profile.objects.select_related('user').filter(user__type='customer')
