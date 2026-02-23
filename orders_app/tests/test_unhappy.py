@@ -65,4 +65,169 @@ class OrderTestsUnhappy(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(res.data)
-        
+
+    def test_order_patch_as_customer_returns_403(self):
+        businessUser = User.objects.create_user(
+            username='businessUser',
+            email='user@business.com',
+            password='test123',
+            type='business',
+        )
+        customerUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+
+        order = Order.objects.create(
+            customer_user=customerUser,
+            business_user=businessUser,
+            title='AAAAA',
+            revisions=2,
+            delivery_time_in_days=4,
+            price='210.00',
+            features=[],
+            offer_type='premium',
+            status='in_progress',
+        )
+        self.client.force_authenticate(user=customerUser)
+
+        url = reverse('order-detail', kwargs={'id': order.id})
+        res = self.client.patch(url, {'status': 'completed'}, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(res.data)
+
+    def test_order_patch_invalid_status_returns_400(self):
+        businessUser = User.objects.create_user(
+            username='businessUser',
+            email='user@business.com',
+            password='test123',
+            type='business',
+        )
+        customerUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+        order = Order.objects.create(
+            customer_user=customerUser,
+            business_user=businessUser,
+            title='AAAAA',
+            revisions=2,
+            delivery_time_in_days=4,
+            price='210.00',
+            features=[],
+            offer_type='premium',
+            status='in_progress',
+        )
+        self.client.force_authenticate(user=businessUser)
+
+        url = reverse('order-detail', kwargs={'id': order.id})
+        res = self.client.patch(url, {'status': 'invalid_status'}, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertTrue(res.data)
+
+    def test_order_delete_requires_auth_returns_401(self):
+        businessUser = User.objects.create_user(
+            username='businessUser',
+            email='user@business.com',
+            password='test123',
+            type='business',
+        )
+        customerUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+        order = Order.objects.create(
+            customer_user=customerUser,
+            business_user=businessUser,
+            title='AAAAA',
+            revisions=2,
+            delivery_time_in_days=4,
+            price='210.00',
+            features=[],
+            offer_type='premium',
+            status='in_progress',
+        )
+
+        url = reverse('order-detail', kwargs={'id': order.id})
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_order_delete_as_non_staff_returns_403(self):
+        businessUser = User.objects.create_user(
+            username='businessUser',
+            email='user@business.com',
+            password='test123',
+            type='business',
+        )
+        customerUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+        order = Order.objects.create(
+            customer_user=customerUser,
+            business_user=businessUser,
+            title='AAAAA',
+            revisions=2,
+            delivery_time_in_days=4,
+            price='210.00',
+            features=[],
+            offer_type='premium',
+            status='in_progress',
+        )
+
+        self.client.force_authenticate(user=customerUser)
+
+        url = reverse('order-detail', kwargs={'id': order.id})
+        res = self.client.delete(url)
+
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(res.data)
+
+    def test_order_count_requires_auth_returns_401(self):
+        url = reverse('order-count', kwargs={'business_user_id': 1})
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_order_count_invalid_business_user_returns_404(self):
+        authUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+
+        self.client.force_authenticate(user=authUser)
+
+        url = reverse('order-count', kwargs={'business_user_id': 9999999999999999})
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(res.data)
+
+
+    def test_completed_order_count_invalid_business_user_returns_404(self):
+        authUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+
+        self.client.force_authenticate(user=authUser)
+
+        url = reverse('completed-order-count', kwargs={'business_user_id': 9999999999999999})
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(res.data)
