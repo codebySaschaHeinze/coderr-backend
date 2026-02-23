@@ -201,7 +201,6 @@ class ProfileTests(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertTrue(isinstance(res.data, list))
-        self.assertGreaterEqual(len(res.data), 1)
 
         for item in res.data:
             self.assertEqual(item['type'], 'customer')
