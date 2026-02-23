@@ -28,7 +28,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         if request.user.type != 'customer':
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        business_user_id = request.data.get("business_user")
+        business_user_id = request.data.get('business_user')
         if business_user_id and Review.objects.filter(
             business_user_id=business_user_id,
             reviewer=request.user

@@ -22,8 +22,8 @@ class Review(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["business_user", "reviewer"],
-                name="unique_review_per_business_per_reviewer",
+                fields=['business_user', 'reviewer'],
+                name='unique_review_per_business_per_reviewer',
             )
         ]
 

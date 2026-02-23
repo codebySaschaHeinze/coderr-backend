@@ -25,9 +25,9 @@ class BaseInfoView(APIView):
 
         return Response(
             {
-                "review_count": review_count,
-                "average_rating": average_rating,
-                "business_profile_count": business_profile_count,
-                "offer_count": offer_count,
+                'review_count': review_count,
+                'average_rating': average_rating,
+                'business_profile_count': business_profile_count,
+                'offer_count': offer_count,
             }
         )

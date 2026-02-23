@@ -28,13 +28,13 @@ class OrdersView(generics.ListCreateAPIView):
         return OrderSerializer
     
     def create(self, request, *args, **kwargs):
-        if request.user.type != "customer":
-            return Response({"detail": "Nur Käufer dürfen Bestellungen erstellen."}, status=status.HTTP_403_FORBIDDEN)
+        if request.user.type != 'customer':
+            return Response({'detail': 'Nur Käufer dürfen Bestellungen erstellen.'}, status=status.HTTP_403_FORBIDDEN)
 
-        serializer = OrderCreateSerializer(data=request.data, context={"request": request})
+        serializer = OrderCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-        detail_id = serializer.validated_data["offer_detail_id"]
-        detail = get_object_or_404(OfferDetail.objects.select_related("offer", "offer__user"), id=detail_id)
+        detail_id = serializer.validated_data['offer_detail_id']
+        detail = get_object_or_404(OfferDetail.objects.select_related('offer', 'offer__user'), id=detail_id)
         order = Order.objects.create(
             customer_user=request.user,
             business_user=detail.offer.user,
@@ -44,7 +44,7 @@ class OrdersView(generics.ListCreateAPIView):
             price=detail.price,
             features=detail.features,
             offer_type=detail.offer_type,
-            status="in_progress",
+            status='in_progress',
         )
 
         return Response(OrderSerializer(order).data, status=status.HTTP_201_CREATED)
@@ -86,17 +86,17 @@ class OrderCountView(APIView):
     permission_classes =[permissions.IsAuthenticated]
 
     def get(self, request, business_user_id):
-        busines_user = get_object_or_404(User, id=business_user_id, type='business')
-        count = Order.objects.filter(business_user=busines_user, status='in_progress').count()
+        business_user = get_object_or_404(User, id=business_user_id, type='business')
+        count = Order.objects.filter(business_user=business_user, status='in_progress').count()
         return Response({'order_count': count}, status=status.HTTP_200_OK)
     
 
 class CompletedOrderCountView(APIView):
-
+    
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, business_user_id):
         business_user = get_object_or_404(User, id=business_user_id, type='business')
-        count = Order.objects.filter(business_user=business_user, status=status.HTTP_200_OK)
-
+        count = Order.objects.filter(business_user=business_user, status='completed').count()
+        return Response({'completed_order_count': count}, status=status.HTTP_200_OK)
 

@@ -6,7 +6,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = '__all__'
-        read_only_fields = ('user", "created_at')
+        read_only_fields = ('user', 'created_at')
 
 
 class BusinessProfileListSerializer(serializers.ModelSerializer):
