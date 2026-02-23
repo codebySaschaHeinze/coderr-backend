@@ -12,7 +12,7 @@ User = get_user_model()
 
 class AuthTests(APITestCase):
 
-    def test_registration_returns_token_and_creates_profile(self):
+    def test_registration_returns_token_and_creates_profile_returns_201(self):
         url = reverse('registration')
         payload = {
             'username': 'User1',
@@ -31,7 +31,7 @@ class AuthTests(APITestCase):
         self.assertTrue(Profile.objects.filter(user=user).exists())
         self.assertTrue(Token.objects.filter(user=user).exists())
 
-    def test_login_success_returns_token_and_user_fields(self):
+    def test_login_success_returns_token_and_user_fields_returns_200(self):
         User.objects.create_user(
             username="User1",
             email="user@1.com",
