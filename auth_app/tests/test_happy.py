@@ -10,7 +10,7 @@ from profile_app.models import Profile
 User = get_user_model()
 
 
-class AuthTests(APITestCase):
+class AuthTestsHappy(APITestCase):
 
     def test_registration_returns_token_and_creates_profile_returns_201(self):
         url = reverse('registration')

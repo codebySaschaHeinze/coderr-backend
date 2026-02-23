@@ -7,7 +7,7 @@ from rest_framework import status
 User = get_user_model()
 
 
-class AuthTests(APITestCase):
+class AuthTestsUnhappy(APITestCase):
 
     def test_login_with_wrong_password_returns_400(self):
         User.objects.create_user(
