@@ -9,6 +9,7 @@ from .serializers import ReviewCreateSerializer, ReviewSerializer, ReviewUpdateS
 
 
 class ReviewListCreateView(generics.ListCreateAPIView):
+
     queryset = Review.objects.all().order_by('-updated_at')
     permission_classes = [permissions.IsAuthenticated]
 
@@ -26,7 +27,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
     
     def create(self, request, *args, **kwargs):
         if request.user.type != 'customer':
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         business_user_id = request.data.get('business_user')
         if business_user_id and Review.objects.filter(
