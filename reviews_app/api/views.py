@@ -63,6 +63,17 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
         return ReviewSerializer
     
     def patch(self, request, *args, **kwargs):
+        allowed_fields = {'rating', 'description'}
+        unknown_fields = set(request.data.keys()) - allowed_fields
+        if unknown_fields:
+            return Response(
+                {
+                    'detail': 'Unzulässige Felder.',
+                    'fields': sorted(unknown_fields),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         review = self.get_object()
         serializer = self.get_serializer(review, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
