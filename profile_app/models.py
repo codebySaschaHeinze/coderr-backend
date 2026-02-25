@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Profile(models.Model):
+    """Extended profile information linked to a user."""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -20,4 +21,5 @@ class Profile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
+        """Return a readable string representation of the profile."""
         return f'Profile({self.user_id})'

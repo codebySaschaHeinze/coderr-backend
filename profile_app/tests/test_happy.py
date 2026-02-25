@@ -10,8 +10,10 @@ User = get_user_model()
 
 
 class ProfileTests(APITestCase):
+    """Tests for profile detail and profile list endpoints."""
 
     def test_profile_detail_success_and_expected_shape_returns_200(self):
+        """Profile detail returns expected response shape with status 200."""
         user = User.objects.create_user(
             username='User1',
             email='user@1.com',
@@ -29,9 +31,18 @@ class ProfileTests(APITestCase):
         self.assertCountEqual(
             res.data.keys(),
             [
-                'user', 'username', 'first_name', 'last_name', 'file',
-                'location', 'tel', 'description', 'working_hours',
-                'type', 'email', 'created_at',
+                'user',
+                'username',
+                'first_name',
+                'last_name',
+                'file',
+                'location',
+                'tel',
+                'description',
+                'working_hours',
+                'type',
+                'email',
+                'created_at',
             ],
         )
 
@@ -39,7 +50,7 @@ class ProfileTests(APITestCase):
             self.assertIsNotNone(res.data[key])
 
     def test_profile_detail_empty_fields_are_empty_string_not_null_returns_200(self):
-
+        """Profile detail returns empty strings instead of null for empty fields."""
         user = User.objects.create_user(
             username='EmptyUser',
             email='user@empty.com',
@@ -57,8 +68,9 @@ class ProfileTests(APITestCase):
 
         for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
             self.assertEqual(res.data[key], '')
-        
+
     def test_profile_patch_owner_and_updates_fields_returns_200(self):
+        """Profile owner can patch fields and nested email with status 200."""
         user = User.objects.create_user(
             username='User1',
             email='user@1.com',
@@ -85,29 +97,30 @@ class ProfileTests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['first_name'], 'Monty')
         self.assertEqual(res.data['email'], 'monty@python.com')
-        self.assertEqual(res.data["working_hours"], '10-18')
+        self.assertEqual(res.data['working_hours'], '10-18')
 
         for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
             self.assertIsNotNone(res.data[key])
 
     def test_profiles_business_returns_only_business_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Business profile list returns only business profiles."""
+        business_user = User.objects.create_user(
             username='BusinessUser',
             email='user@business.com',
             password='test1234',
             type='business',
         )
-        Profile.objects.create(user=businessUser)
+        Profile.objects.create(user=business_user)
 
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
-            type='customer'
+            type='customer',
         )
-        Profile.objects.create(user=customerUser)
+        Profile.objects.create(user=customer_user)
 
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('profiles-business')
         res = self.client.get(url)
@@ -120,23 +133,24 @@ class ProfileTests(APITestCase):
             self.assertEqual(item['type'], 'business')
 
     def test_profiles_customer_returns_only_customer_returns_200(self):
-        customerUser = User.objects.create_user(
+        """Customer profile list returns only customer profiles."""
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
-            type='customer'
+            type='customer',
         )
-        Profile.objects.create(user=customerUser)
+        Profile.objects.create(user=customer_user)
 
-        businessUser = User.objects.create_user(
+        business_user = User.objects.create_user(
             username='BusinessUser',
             email='user@business.com',
             password='test1234',
             type='business',
         )
-        Profile.objects.create(user=businessUser)
+        Profile.objects.create(user=business_user)
 
-        self.client.force_authenticate(user=businessUser)
+        self.client.force_authenticate(user=business_user)
 
         url = reverse('profiles-customer')
         res = self.client.get(url)
@@ -146,4 +160,3 @@ class ProfileTests(APITestCase):
 
         for item in res.data:
             self.assertEqual(item['type'], 'customer')
-            

@@ -5,6 +5,8 @@ from .validators import normalize_none_to_empty_str
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    """Serializer for generic profile model access."""
+
     class Meta:
         model = Profile
         fields = '__all__'
@@ -12,6 +14,8 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class BusinessProfileListSerializer(serializers.ModelSerializer):
+    """Serializer for listing business profiles."""
+
     user = serializers.IntegerField(source='user.id', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     type = serializers.CharField(source='user.type', read_only=True)
@@ -32,14 +36,17 @@ class BusinessProfileListSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """Normalize nullable profile fields to empty strings in responses."""
         data = super().to_representation(instance)
         return normalize_none_to_empty_str(
             data,
             ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'),
         )
-    
+
 
 class CustomerProfileListSerializer(serializers.ModelSerializer):
+    """Serializer for listing customer profiles."""
+
     user = serializers.IntegerField(source='user.id', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     type = serializers.CharField(source='user.type', read_only=True)
@@ -59,19 +66,21 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
         ]
 
     def to_representation(self, instance):
+        """Normalize nullable profile fields to empty strings in responses."""
         data = super().to_representation(instance)
         return normalize_none_to_empty_str(
             data,
             ('first_name', 'last_name'),
         )
-    
+
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
-    
+    """Serializer for profile detail responses and profile updates."""
+
     user = serializers.IntegerField(source='user.id', read_only=True)
     username = serializers.CharField(source='user.username', read_only=True)
     email = serializers.EmailField(source='user.email')
-    type = serializers.CharField(source="user.type", read_only=True)
+    type = serializers.CharField(source='user.type', read_only=True)
 
     class Meta:
         model = Profile
@@ -92,6 +101,7 @@ class ProfileDetailSerializer(serializers.ModelSerializer):
         read_only_fields = ('user', 'username', 'type', 'created_at')
 
     def update(self, instance, validated_data):
+        """Update profile fields and nested user email if provided."""
         user_data = validated_data.pop('user', {})
 
         instance = super().update(instance, validated_data)
