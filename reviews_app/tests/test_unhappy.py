@@ -79,6 +79,36 @@ class ReviewTestsUnhappy(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_reviews_create_business_user_must_be_business_returns_400(self):
+        customerUser = User.objects.create_user(
+            username='CustomerUser',
+            email='user@customer.com',
+            password='test123',
+            type='customer',
+        )
+        notBusinessUser = User.objects.create_user(
+            username='NotBusinessUser',
+            email='user@notbusiness.com',
+            password='test123',
+            type='customer',
+        )
+
+        self.client.force_authenticate(user=customerUser)
+
+        url = reverse('reviews')
+        res = self.client.post(
+            url,
+            {
+                'business_user': notBusinessUser.id,
+                'rating': 4,
+                'description': 'Sollte fehlschlagen',
+            },
+            format='json',
+        )
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Review.objects.count(), 0)
+
     def test_review_patch_requires_auth_returns_401(self):
         customerUser = User.objects.create_user(
             username='CustomerUser',
