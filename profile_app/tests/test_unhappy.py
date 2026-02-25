@@ -68,7 +68,7 @@ class ProfileTests(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertTrue(res.data)
 
-    def test_profiles_businnes_requires_auth_returns_401(self):
+    def test_profiles_business_requires_auth_returns_401(self):
         """Business profile list without authentication returns status 401."""
         url = reverse('profiles-business')
         res = self.client.get(url)
