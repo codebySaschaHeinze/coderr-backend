@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Review(models.Model):
+    """Review written by a user for a business user."""
 
     business_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -20,6 +21,8 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        """Model constraints for review uniqueness."""
+
         constraints = [
             models.UniqueConstraint(
                 fields=['business_user', 'reviewer'],
@@ -28,4 +31,5 @@ class Review(models.Model):
         ]
 
     def __str__(self):
+        """Return a readable string representation of the review."""
         return f'Review({self.id}) {self.rating}'
