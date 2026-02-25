@@ -11,7 +11,7 @@ def validate_passwords_match(password: str, repeated_password: str) -> None:
 
 
 def validate_login(username: str, password: str):
-    """Authenticate user and return it, or raise ValidationError."""
+    """Authenticate a user and return it, or raise ValidationError."""
     user = authenticate(username=username, password=password)
     if not user:
         raise serializers.ValidationError('Ungültige Anmeldeinformationen.')

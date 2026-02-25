@@ -1,29 +1,36 @@
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from rest_framework.test import APITestCase
 from rest_framework import status
+from rest_framework.test import APITestCase
 
 
 User = get_user_model()
 
 
 class AuthTestsUnhappy(APITestCase):
+    """Unhappy-path tests for registration and login endpoints."""
 
     def test_login_with_wrong_password_returns_400(self):
+        """Login with wrong password returns status 400."""
         User.objects.create_user(
             username='User2',
             email='user@2.com',
             password='correctpw',
-            type='business'
+            type='business',
         )
 
         url = reverse('login')
-        res = self.client.post(url, {'username': 'User2','password': 'wrongpw'}, format='json')
+        res = self.client.post(
+            url,
+            {'username': 'User2', 'password': 'wrongpw'},
+            format='json',
+        )
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(res.data)
 
     def test_registration_duplicate_email_returns_400(self):
+        """Registration with duplicate email returns status 400."""
         url = reverse('registration')
         payload = {
             'username': 'User1',
@@ -39,9 +46,9 @@ class AuthTestsUnhappy(APITestCase):
         payload['username'] = 'User2'
         res2 = self.client.post(url, payload, format='json')
         self.assertEqual(res2.status_code, status.HTTP_400_BAD_REQUEST)
-        
 
     def test_registration_password_mismatch_returns_400(self):
+        """Registration with mismatched passwords returns status 400."""
         url = reverse('registration')
         payload = {
             'username': 'User3',
@@ -57,6 +64,7 @@ class AuthTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_login_unknown_user_returns_400(self):
+        """Login with unknown username returns status 400."""
         User.objects.create_user(
             username='Existing',
             email='ex@mail.de',
@@ -68,11 +76,8 @@ class AuthTestsUnhappy(APITestCase):
         res = self.client.post(
             login_url,
             {'username': 'DoesNotExist', 'password': 'whatever'},
-            format="json",
+            format='json',
         )
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertTrue(res.data)
-
-
-

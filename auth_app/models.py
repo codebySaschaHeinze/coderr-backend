@@ -3,6 +3,8 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Custom user model with role-based user type."""
+
     USER_TYPE_CHOICES = (
         ('customer', 'customer'),
         ('business', 'business'),
