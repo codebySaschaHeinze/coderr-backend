@@ -10,18 +10,20 @@ User = get_user_model()
 
 
 class OfferTestsHappy(APITestCase):
+    """Happy-path tests for offer and offer-detail endpoints."""
 
     def test_offers_list_is_public_and_paginated_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Offer list is public, paginated, and returns status 200."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
         offer = Offer.objects.create(
-            user=businessUser,
+            user=business_user,
             title='Website Design',
-            description='Ein wundervolles Website-Design'
+            description='Ein wundervolles Website-Design',
         )
         OfferDetail.objects.create(
             offer=offer,
@@ -50,7 +52,7 @@ class OfferTestsHappy(APITestCase):
             features=['Logo Design', 'Visitenkarten', 'Flyer'],
             offer_type='premium',
         )
-        
+
         url = reverse('offers')
         res = self.client.get(url)
 
@@ -60,13 +62,14 @@ class OfferTestsHappy(APITestCase):
         self.assertGreaterEqual(len(res.data['results']), 1)
 
     def test_offers_create_as_business_with_three_details_returns_201(self):
-        businessUser = User.objects.create_user(
+        """Business user can create an offer with exactly three details."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        self.client.force_authenticate(user=businessUser)
+        self.client.force_authenticate(user=business_user)
 
         url = reverse('offers')
         payload = {
@@ -98,7 +101,7 @@ class OfferTestsHappy(APITestCase):
                     'features': ['Logo Design', 'Visitenkarten', 'Flyer'],
                     'offer_type': 'premium',
                 },
-            ]
+            ],
         }
 
         res = self.client.post(url, payload, format='json')
@@ -112,22 +115,23 @@ class OfferTestsHappy(APITestCase):
             self.assertIn('offer_type', details)
 
     def test_offer_detail_success_and_expected_shape_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Authenticated user can retrieve offer detail with expected response shape."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        authUser = User.objects.create_user(
+        auth_user = User.objects.create_user(
             username='authUser',
             email='user@auth.com',
             password='test123',
             type='customer',
         )
         offer = Offer.objects.create(
-            user=businessUser,
+            user=business_user,
             title='Website Design',
-            description='Ein wundervolles Website-Design'
+            description='Ein wundervolles Website-Design',
         )
         OfferDetail.objects.create(
             offer=offer,
@@ -157,7 +161,7 @@ class OfferTestsHappy(APITestCase):
             offer_type='premium',
         )
 
-        self.client.force_authenticate(user=authUser)
+        self.client.force_authenticate(user=auth_user)
 
         url = reverse('offer-detail', kwargs={'id': offer.id})
         res = self.client.get(url)
@@ -178,20 +182,21 @@ class OfferTestsHappy(APITestCase):
                 'min_delivery_time',
             ],
         )
-        self.assertEqual(res.data['user'], businessUser.id)
+        self.assertEqual(res.data['user'], business_user.id)
         self.assertEqual(len(res.data['details']), 3)
 
     def test_offer_patch_owner_updates_title_returns_200(self):
-        ownerUser = User.objects.create_user(
+        """Offer owner can update offer title and receives status 200."""
+        owner_user = User.objects.create_user(
             username='ownerUser',
             email='user@owner.com',
             password='test123',
             type='business',
         )
         offer = Offer.objects.create(
-            user=ownerUser,
+            user=owner_user,
             title='Website Design',
-            description='Ein wundervolles Website-Design'
+            description='Ein wundervolles Website-Design',
         )
         OfferDetail.objects.create(
             offer=offer,
@@ -221,7 +226,7 @@ class OfferTestsHappy(APITestCase):
             offer_type='premium',
         )
 
-        self.client.force_authenticate(user=ownerUser)
+        self.client.force_authenticate(user=owner_user)
 
         url = reverse('offer-detail', kwargs={'id': offer.id})
         res = self.client.patch(url, {'title': 'Aktualisierter Titel'}, format='json')
@@ -231,16 +236,17 @@ class OfferTestsHappy(APITestCase):
         self.assertEqual(len(res.data['details']), 3)
 
     def test_offer_delete_as_owner_returns_204(self):
-        ownerUser = User.objects.create_user(
+        """Offer owner can delete the offer and receives status 204."""
+        owner_user = User.objects.create_user(
             username='ownerUser',
             email='user@owner.com',
             password='test123',
             type='business',
         )
         offer = Offer.objects.create(
-            user=ownerUser, 
-            title='Schöner Titel', 
-            description='Schöne Beschreibung'
+            user=owner_user,
+            title='Schöner Titel',
+            description='Schöne Beschreibung',
         )
         OfferDetail.objects.create(
             offer=offer,
@@ -270,7 +276,7 @@ class OfferTestsHappy(APITestCase):
             offer_type='premium',
         )
 
-        self.client.force_authenticate(user=ownerUser)
+        self.client.force_authenticate(user=owner_user)
 
         url = reverse('offer-detail', kwargs={'id': offer.id})
         res = self.client.delete(url)
@@ -279,13 +285,14 @@ class OfferTestsHappy(APITestCase):
         self.assertFalse(Offer.objects.filter(id=offer.id).exists())
 
     def test_offerdetail_success_and_expected_shape_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Authenticated user can retrieve a single offer-detail item."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        authUser = User.objects.create_user(
+        auth_user = User.objects.create_user(
             username='authUser',
             email='user@auth.com',
             password='test123',
@@ -293,9 +300,9 @@ class OfferTestsHappy(APITestCase):
         )
 
         offer = Offer.objects.create(
-            user=businessUser,
+            user=business_user,
             title='Website Design',
-            description='Ein wundervolles Website-Design'
+            description='Ein wundervolles Website-Design',
         )
         detail = OfferDetail.objects.create(
             offer=offer,
@@ -307,7 +314,7 @@ class OfferTestsHappy(APITestCase):
             offer_type='basic',
         )
 
-        self.client.force_authenticate(user=authUser)
+        self.client.force_authenticate(user=auth_user)
 
         url = reverse('offer-detail-item', kwargs={'id': detail.id})
         res = self.client.get(url)
@@ -315,5 +322,13 @@ class OfferTestsHappy(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertCountEqual(
             res.data.keys(),
-            ['id', 'title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']
+            [
+                'id',
+                'title',
+                'revisions',
+                'delivery_time_in_days',
+                'price',
+                'features',
+                'offer_type',
+            ],
         )

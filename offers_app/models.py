@@ -3,6 +3,7 @@ from django.db import models
 
 
 class Offer(models.Model):
+    """Offer created by a business user."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -17,10 +18,12 @@ class Offer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
+        """Return a readable string representation of the offer."""
         return f'Offer({self.id}) {self.title}'
-    
+
 
 class OfferDetail(models.Model):
+    """Detailed package information for an offer."""
 
     OFFER_TYPE_CHOICES = (
         ('basic', 'basic'),
@@ -29,7 +32,8 @@ class OfferDetail(models.Model):
     )
 
     offer = models.ForeignKey(
-        Offer, on_delete=models.CASCADE,
+        Offer,
+        on_delete=models.CASCADE,
         related_name='details',
     )
 
@@ -41,6 +45,8 @@ class OfferDetail(models.Model):
     offer_type = models.CharField(max_length=20, choices=OFFER_TYPE_CHOICES)
 
     class Meta:
+        """Model constraints for offer details."""
+
         constraints = [
             models.UniqueConstraint(
                 fields=['offer', 'offer_type'],
@@ -49,5 +55,5 @@ class OfferDetail(models.Model):
         ]
 
     def __str__(self):
-        return f'Offerdetail({self.id}) {self.offer_type}'
-    
+        """Return a readable string representation of the offer detail."""
+        return f'OfferDetail({self.id}) {self.offer_type}'
