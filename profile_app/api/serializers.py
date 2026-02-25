@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from profile_app.models import Profile
+from .validators import normalize_none_to_empty_str
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -31,10 +33,10 @@ class BusinessProfileListSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for key in ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'):
-            if data.get(key) is None:
-                data[key] = ''
-        return data
+        return normalize_none_to_empty_str(
+            data,
+            ('first_name', 'last_name', 'location', 'tel', 'description', 'working_hours'),
+        )
     
 
 class CustomerProfileListSerializer(serializers.ModelSerializer):
@@ -58,10 +60,10 @@ class CustomerProfileListSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        for key in ('first_name', 'last_name'):
-            if data.get(key) is None:
-                data[key] = ''
-        return data
+        return normalize_none_to_empty_str(
+            data,
+            ('first_name', 'last_name'),
+        )
     
 
 class ProfileDetailSerializer(serializers.ModelSerializer):
