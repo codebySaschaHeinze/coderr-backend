@@ -1,8 +1,7 @@
-from django.db.models import Min
-
 from rest_framework import serializers
 
 from offers_app.models import Offer, OfferDetail
+from .validators import validate_offer_details_count, validate_offer_type_for_update
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
@@ -91,9 +90,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_details(self, details):
-        if len(details) != 3:
-            raise serializers.ValidationError('Ein Angebot muss genau 3 Details enthalten.')
-        return details
+        return validate_offer_details_count(details)
     
     def create(self, validated_data):
         details_data = validated_data.pop('details')
@@ -130,10 +127,7 @@ class OfferUpdateSerializer(serializers.ModelSerializer):
             details_by_type = {d.offer_type: d for d in instance.details.all()}
             for d in details_data:
                 offer_type = d.get('offer_type')
-                if not offer_type or offer_type not in details_by_type:
-                    raise serializers.ValidationError(
-                        {'details': 'offer_type muss mitgegeben werden (basic/standard/premium).'}
-                    )
+                validate_offer_type_for_update(offer_type, set(details_by_type.keys()))
                 detail_obj = details_by_type[offer_type]
                 for k, v in d.items():
                     setattr(detail_obj, k, v)
