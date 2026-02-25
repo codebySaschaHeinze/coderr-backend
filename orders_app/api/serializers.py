@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from offers_app.models import OfferDetail
 from orders_app.models import Order
 from .validators import get_offer_detail_or_404
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    """Serializer for order read and status update operations."""
 
     class Meta:
         model = Order
@@ -39,10 +39,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.Serializer):
+    """Serializer for creating an order from an offer detail."""
 
     offer_detail_id = serializers.IntegerField()
-    
+
     def create(self, validated_data):
+        """Create an order from the selected offer detail."""
         request = self.context['request']
         detail = get_offer_detail_or_404(validated_data['offer_detail_id'])
 

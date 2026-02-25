@@ -11,15 +11,17 @@ User = get_user_model()
 
 
 class OrderTestsHappy(APITestCase):
-    
+    """Happy-path tests for order endpoints."""
+
     def test_orders_create_as_customer_expected_shape_and_returns_201(self):
-        businessUser = User.objects.create_user(
+        """Customer can create an order and receives expected response shape."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
@@ -27,7 +29,7 @@ class OrderTestsHappy(APITestCase):
         )
 
         offer = Offer.objects.create(
-            user=businessUser,
+            user=business_user,
             title='Logo Design',
             description='Ein ziemlich nices Logo',
         )
@@ -41,7 +43,7 @@ class OrderTestsHappy(APITestCase):
             offer_type='basic',
         )
 
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('order')
         res = self.client.post(url, {'offer_detail_id': offer_detail.id}, format='json')
@@ -64,31 +66,32 @@ class OrderTestsHappy(APITestCase):
                 'updated_at',
             ],
         )
-        self.assertEqual(res.data['customer_user'], customerUser.id)
-        self.assertEqual(res.data['business_user'], businessUser.id)
+        self.assertEqual(res.data['customer_user'], customer_user.id)
+        self.assertEqual(res.data['business_user'], business_user.id)
         self.assertEqual(res.data['offer_type'], 'basic')
         self.assertEqual(res.data['status'], 'in_progress')
 
     def test_orders_list_returns_only_related_orders_returns_200(self):
-        businessUser1 = User.objects.create_user(
+        """Order list returns only orders related to the authenticated user."""
+        business_user_1 = User.objects.create_user(
             username='businessUser1',
             email='user@business1.com',
             password='test123',
             type='business',
         )
-        businessUser2 = User.objects.create_user(
+        business_user_2 = User.objects.create_user(
             username='businessUser2',
             email='user@business2.com',
             password='test123',
             type='business',
         )
-        customerUser1 = User.objects.create_user(
+        customer_user_1 = User.objects.create_user(
             username='CustomerUser1',
             email='user@customer1.com',
             password='test123',
             type='customer',
         )
-        customerUser2 = User.objects.create_user(
+        customer_user_2 = User.objects.create_user(
             username='CustomerUser2',
             email='user@customer2.com',
             password='test123',
@@ -96,8 +99,8 @@ class OrderTestsHappy(APITestCase):
         )
 
         Order.objects.create(
-            customer_user=customerUser1,
-            business_user=businessUser1,
+            customer_user=customer_user_1,
+            business_user=business_user_1,
             title='AAAAA',
             revisions=1,
             delivery_time_in_days=5,
@@ -107,8 +110,8 @@ class OrderTestsHappy(APITestCase):
             status='in_progress',
         )
         Order.objects.create(
-            customer_user=customerUser1,
-            business_user=businessUser2,
+            customer_user=customer_user_1,
+            business_user=business_user_2,
             title='BBBBB',
             revisions=2,
             delivery_time_in_days=7,
@@ -118,8 +121,8 @@ class OrderTestsHappy(APITestCase):
             status='in_progress',
         )
         Order.objects.create(
-            customer_user=customerUser2,
-            business_user=businessUser1,
+            customer_user=customer_user_2,
+            business_user=business_user_1,
             title='CCCCC',
             revisions=4,
             delivery_time_in_days=3,
@@ -128,7 +131,7 @@ class OrderTestsHappy(APITestCase):
             offer_type='standard',
             status='in_progress',
         )
-        self.client.force_authenticate(user=customerUser1)
+        self.client.force_authenticate(user=customer_user_1)
 
         url = reverse('order')
         res = self.client.get(url)
@@ -137,24 +140,25 @@ class OrderTestsHappy(APITestCase):
         self.assertEqual(len(res.data), 2)
 
         for item in res.data:
-            self.assertEqual(item['customer_user'], customerUser1.id)
+            self.assertEqual(item['customer_user'], customer_user_1.id)
 
     def test_order_patch_as_business_updates_status_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Business user can update order status and receives status 200."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=6,
             delivery_time_in_days=12,
@@ -163,7 +167,7 @@ class OrderTestsHappy(APITestCase):
             offer_type='standard',
             status='in_progress',
         )
-        self.client.force_authenticate(user=businessUser)
+        self.client.force_authenticate(user=business_user)
 
         url = reverse('order-detail', kwargs={'id': order.id})
         res = self.client.patch(url, {'status': 'completed'}, format='json')
@@ -172,19 +176,20 @@ class OrderTestsHappy(APITestCase):
         self.assertEqual(res.data['status'], 'completed')
 
     def test_order_delete_as_staff_returns_204(self):
-        businessUser = User.objects.create_user(
+        """Staff user can delete an order and receives status 204."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
-        staffUser = User.objects.create_user(
+        staff_user = User.objects.create_user(
             username='Admin',
             email='user@admin.com',
             password='test123',
@@ -192,8 +197,8 @@ class OrderTestsHappy(APITestCase):
             is_staff=True,
         )
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=2,
             delivery_time_in_days=4,
@@ -202,8 +207,8 @@ class OrderTestsHappy(APITestCase):
             offer_type='premium',
             status='in_progress',
         )
-        
-        self.client.force_authenticate(user=staffUser)
+
+        self.client.force_authenticate(user=staff_user)
 
         url = reverse('order-detail', kwargs={'id': order.id})
         res = self.client.delete(url)
@@ -212,21 +217,22 @@ class OrderTestsHappy(APITestCase):
         self.assertFalse(Order.objects.filter(id=order.id).exists())
 
     def test_order_count_returns_correct_number_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Order-count endpoint returns the number of in-progress orders."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=6,
             delivery_time_in_days=2,
@@ -236,8 +242,8 @@ class OrderTestsHappy(APITestCase):
             status='in_progress',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='BBBBB',
             revisions=7,
             delivery_time_in_days=4,
@@ -247,8 +253,8 @@ class OrderTestsHappy(APITestCase):
             status='in_progress',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='CCCCC',
             revisions=5,
             delivery_time_in_days=3,
@@ -258,30 +264,31 @@ class OrderTestsHappy(APITestCase):
             status='completed',
         )
 
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
-        url = reverse('order-count', kwargs={'business_user_id': businessUser.id})
+        url = reverse('order-count', kwargs={'business_user_id': business_user.id})
         res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['order_count'], 2)
 
     def test_completed_order_count_returns_correct_number_returns_200(self):
-        businessUser = User.objects.create_user(
+        """Completed-order-count endpoint returns the number of completed orders."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=6,
             delivery_time_in_days=2,
@@ -291,8 +298,8 @@ class OrderTestsHappy(APITestCase):
             status='completed',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='BBBBB',
             revisions=7,
             delivery_time_in_days=4,
@@ -302,8 +309,8 @@ class OrderTestsHappy(APITestCase):
             status='completed',
         )
         Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='CCCCC',
             revisions=5,
             delivery_time_in_days=3,
@@ -313,9 +320,9 @@ class OrderTestsHappy(APITestCase):
             status='in_progress',
         )
 
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
-        url = reverse('completed-order-count', kwargs={'business_user_id': businessUser.id})
+        url = reverse('completed-order-count', kwargs={'business_user_id': business_user.id})
         res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)

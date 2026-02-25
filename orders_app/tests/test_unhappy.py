@@ -10,25 +10,29 @@ User = get_user_model()
 
 
 class OrderTestsUnhappy(APITestCase):
-    
+    """Unhappy-path tests for order endpoints."""
+
     def test_orders_list_requires_auth_returns_401(self):
+        """Order list without authentication returns status 401."""
         url = reverse('order')
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_orders_create_requires_auth_returns_401(self):
+        """Order creation without authentication returns status 401."""
         url = reverse('order')
         res = self.client.post(url, {'offer_detail_id': 1}, format='json')
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_orders_create_as_business_returns_403(self):
-        businessUser = User.objects.create_user(
+        """Order creation as business user returns status 403."""
+        business_user = User.objects.create_user(
             username='User1',
             email='user@1.com',
             password='test123',
             type='business',
         )
-        self.client.force_authenticate(user=businessUser)
+        self.client.force_authenticate(user=business_user)
 
         url = reverse('order')
         res = self.client.post(url, {'offer_detail_id': 1}, format='json')
@@ -37,13 +41,14 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_orders_create_without_offer_detail_id_returns_400(self):
-        customerUser = User.objects.create_user(
+        """Order creation without offer_detail_id returns status 400."""
+        customer_user = User.objects.create_user(
             username='User1',
             email='user@1.com',
             password='test123',
             type='customer',
         )
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('order')
         res = self.client.post(url, {}, format='json')
@@ -52,13 +57,14 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_order_create_invalid_offer_detail_id_returns_404(self):
-        customerUser = User.objects.create_user(
+        """Order creation with invalid offer_detail_id returns status 404."""
+        customer_user = User.objects.create_user(
             username='User1',
             email='user@1.com',
             password='test123',
             type='customer',
         )
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('order')
         res = self.client.post(url, {'offer_detail_id': 99999999999999}, format='json')
@@ -67,13 +73,14 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_order_patch_as_customer_returns_403(self):
-        businessUser = User.objects.create_user(
+        """Order status update as customer user returns status 403."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
@@ -81,8 +88,8 @@ class OrderTestsUnhappy(APITestCase):
         )
 
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=2,
             delivery_time_in_days=4,
@@ -91,7 +98,7 @@ class OrderTestsUnhappy(APITestCase):
             offer_type='premium',
             status='in_progress',
         )
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('order-detail', kwargs={'id': order.id})
         res = self.client.patch(url, {'status': 'completed'}, format='json')
@@ -100,21 +107,22 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_order_patch_invalid_status_returns_400(self):
-        businessUser = User.objects.create_user(
+        """Order status update with invalid status returns status 400."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=2,
             delivery_time_in_days=4,
@@ -123,7 +131,7 @@ class OrderTestsUnhappy(APITestCase):
             offer_type='premium',
             status='in_progress',
         )
-        self.client.force_authenticate(user=businessUser)
+        self.client.force_authenticate(user=business_user)
 
         url = reverse('order-detail', kwargs={'id': order.id})
         res = self.client.patch(url, {'status': 'invalid_status'}, format='json')
@@ -132,21 +140,22 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_order_delete_requires_auth_returns_401(self):
-        businessUser = User.objects.create_user(
+        """Order delete without authentication returns status 401."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=2,
             delivery_time_in_days=4,
@@ -162,21 +171,22 @@ class OrderTestsUnhappy(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_order_delete_as_non_staff_returns_403(self):
-        businessUser = User.objects.create_user(
+        """Order delete by non-staff user returns status 403."""
+        business_user = User.objects.create_user(
             username='businessUser',
             email='user@business.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
         order = Order.objects.create(
-            customer_user=customerUser,
-            business_user=businessUser,
+            customer_user=customer_user,
+            business_user=business_user,
             title='AAAAA',
             revisions=2,
             delivery_time_in_days=4,
@@ -186,7 +196,7 @@ class OrderTestsUnhappy(APITestCase):
             status='in_progress',
         )
 
-        self.client.force_authenticate(user=customerUser)
+        self.client.force_authenticate(user=customer_user)
 
         url = reverse('order-detail', kwargs={'id': order.id})
         res = self.client.delete(url)
@@ -195,19 +205,21 @@ class OrderTestsUnhappy(APITestCase):
         self.assertTrue(res.data)
 
     def test_order_count_requires_auth_returns_401(self):
+        """Order-count endpoint without authentication returns status 401."""
         url = reverse('order-count', kwargs={'business_user_id': 1})
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_order_count_invalid_business_user_returns_404(self):
-        authUser = User.objects.create_user(
+        """Order-count endpoint with invalid business user returns status 404."""
+        auth_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
 
-        self.client.force_authenticate(user=authUser)
+        self.client.force_authenticate(user=auth_user)
 
         url = reverse('order-count', kwargs={'business_user_id': 9999999999999999})
         res = self.client.get(url)
@@ -215,18 +227,21 @@ class OrderTestsUnhappy(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(res.data)
 
-
     def test_completed_order_count_invalid_business_user_returns_404(self):
-        authUser = User.objects.create_user(
+        """Completed-order-count with invalid business user returns status 404."""
+        auth_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
             type='customer',
         )
 
-        self.client.force_authenticate(user=authUser)
+        self.client.force_authenticate(user=auth_user)
 
-        url = reverse('completed-order-count', kwargs={'business_user_id': 9999999999999999})
+        url = reverse(
+            'completed-order-count',
+            kwargs={'business_user_id': 9999999999999999},
+        )
         res = self.client.get(url)
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
