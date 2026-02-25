@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from offers_app.models import OfferDetail
 from orders_app.models import Order
+from .validators import get_offer_detail_or_404
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -43,7 +44,7 @@ class OrderCreateSerializer(serializers.Serializer):
     
     def create(self, validated_data):
         request = self.context['request']
-        detail = OfferDetail.objects.select_related('offer', 'offer__user').get(id=validated_data['offer_detail_id'])
+        detail = get_offer_detail_or_404(validated_data['offer_detail_id'])
 
         order = Order.objects.create(
             customer_user=request.user,

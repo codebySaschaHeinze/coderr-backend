@@ -9,6 +9,7 @@ from orders_app.models import Order
 from offers_app.models import OfferDetail
 from .permissions import IsBusinessUser, IsCustomerUser, IsStaffUser
 from .serializers import OrderCreateSerializer, OrderSerializer
+from .validators import validate_customer_can_create, get_offer_detail_or_404, validate_order_status
 
 
 User = get_user_model()
@@ -28,13 +29,14 @@ class OrdersView(generics.ListCreateAPIView):
         return OrderSerializer
     
     def create(self, request, *args, **kwargs):
-        if request.user.type != 'customer':
-            return Response({'detail': 'Nur Käufer dürfen Bestellungen erstellen.'}, status=status.HTTP_403_FORBIDDEN)
+        validate_customer_can_create(request.user)
 
         serializer = OrderCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
+
         detail_id = serializer.validated_data['offer_detail_id']
-        detail = get_object_or_404(OfferDetail.objects.select_related('offer', 'offer__user'), id=detail_id)
+        detail = get_offer_detail_or_404(detail_id)
+
         order = Order.objects.create(
             customer_user=request.user,
             business_user=detail.offer.user,
@@ -68,14 +70,8 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def patch(self, request, *args, **kwargs):
         order = self.get_object()
-        status_value = request.data.get('status')
-        if status_value is None:
-            return Response({'status': 'Dieses Feld ist erforderlich.'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        allowed = {'in_progress', 'completed', 'cancelled'}
-        if status_value not in allowed:
-            return Response({'status': 'Ungültiger Status.'}, status=status.HTTP_400_BAD_REQUEST)
-        
+        status_value = validate_order_status(request.data.get('status'))
+
         order.status = status_value
         order.save(update_fields=['status', 'updated_at'])
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
