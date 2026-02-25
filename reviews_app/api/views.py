@@ -6,6 +6,11 @@ from reviews_app.models import Review
 from .filters import ReviewFilter
 from .permissions import IsReviewOwner
 from .serializers import ReviewCreateSerializer, ReviewSerializer, ReviewUpdateSerializer
+from .validators import (
+    validate_customer_can_create_review,
+    validate_no_duplicate_review,
+    validate_only_allowed_patch_fields,
+)
 
 
 class ReviewListCreateView(generics.ListCreateAPIView):
@@ -26,15 +31,16 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         return ReviewSerializer
     
     def create(self, request, *args, **kwargs):
-        if request.user.type != 'customer':
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        validate_customer_can_create_review(request.user)
 
         business_user_id = request.data.get('business_user')
-        if business_user_id and Review.objects.filter(
+        exists = bool(
+            business_user_id and Review.objects.filter(
             business_user_id=business_user_id,
-            reviewer=request.user
-        ).exists():
-            return Response(status=status.HTTP_403_FORBIDDEN)
+            reviewer=request.user,
+            ).exists()
+        )
+        validate_no_duplicate_review(exists)
 
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
@@ -65,15 +71,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def patch(self, request, *args, **kwargs):
         allowed_fields = {'rating', 'description'}
-        unknown_fields = set(request.data.keys()) - allowed_fields
-        if unknown_fields:
-            return Response(
-                {
-                    'detail': 'Unzulässige Felder.',
-                    'fields': sorted(unknown_fields),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        validate_only_allowed_patch_fields(request.data, allowed_fields)
 
         review = self.get_object()
         serializer = self.get_serializer(review, data=request.data, partial=True)

@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from reviews_app.models import Review
+from .validators import validate_business_user_is_business
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -43,13 +44,9 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        request = self.context['request']
-        business_user = attrs.get('business_user')
-
-        if not business_user or business_user.type != 'business':
-            raise serializers.ValidationError({'business_user': 'Muss ein Verkäufer sein.'})
+        validate_business_user_is_business(attrs.get('business_user'))
         return attrs
-    
+
     def create(self, validated_data):
         request = self.context['request']
         return Review.objects.create(reviewer=request.user, **validated_data)
