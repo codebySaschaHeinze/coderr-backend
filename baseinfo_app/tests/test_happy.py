@@ -11,21 +11,23 @@ User = get_user_model()
 
 
 class BaseInfoTestsHappy(APITestCase):
+    """Happy-path tests for the base-info endpoint."""
 
     def test_base_info_and_expected_aggregations_returns_200(self):
-        businessUser1 = User.objects.create_user(
+        """Base-info returns expected aggregated values with status 200."""
+        business_user_1 = User.objects.create_user(
             username='businessUser1',
             email='user@business1.com',
             password='test123',
             type='business',
         )
-        businessUser2 = User.objects.create_user(
+        business_user_2 = User.objects.create_user(
             username='businessUser2',
             email='user@business2.com',
             password='test123',
             type='business',
         )
-        customerUser = User.objects.create_user(
+        customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
             password='test123',
@@ -33,30 +35,30 @@ class BaseInfoTestsHappy(APITestCase):
         )
 
         Offer.objects.create(
-            user=businessUser1,
+            user=business_user_1,
             title='AAAAA',
             description='DDDDD',
         )
         Offer.objects.create(
-            user=businessUser2,
+            user=business_user_2,
             title='BBBBB',
             description='DDDDD',
         )
         Offer.objects.create(
-            user=businessUser2,
+            user=business_user_2,
             title='CCCCC',
             description='DDDDD',
         )
 
         Review.objects.create(
-            business_user=businessUser1,
-            reviewer=customerUser,
+            business_user=business_user_1,
+            reviewer=customer_user,
             rating=4,
             description='ok',
         )
         Review.objects.create(
-            business_user=businessUser2,
-            reviewer=customerUser,
+            business_user=business_user_2,
+            reviewer=customer_user,
             rating=5,
             description='ok',
         )

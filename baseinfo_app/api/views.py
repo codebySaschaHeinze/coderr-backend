@@ -12,10 +12,12 @@ User = get_user_model()
 
 
 class BaseInfoView(APIView):
+    """Return aggregated public base information for the platform."""
 
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
+        """Return review stats, business user count, and offer count."""
         review_count = Review.objects.count()
         avg = Review.objects.aggregate(v=Avg('rating'))['v']
         average_rating = round(float(avg), 1) if avg is not None else 0.0
