@@ -15,9 +15,8 @@ def validate_business_user_is_business(business_user) -> None:
 
 
 def validate_no_duplicate_review(exists: bool) -> None:
-    """Validate that no duplicate review exists for the same user/business pair."""
     if exists:
-        raise PermissionDenied()
+        raise PermissionDenied("Duplicate review not allowed.")
 
 
 def validate_only_allowed_patch_fields(request_data: dict, allowed_fields: set) -> None:

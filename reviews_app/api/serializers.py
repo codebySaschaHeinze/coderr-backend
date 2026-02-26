@@ -39,8 +39,8 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating reviews."""
 
-    business_user = UserMiniSerializer(read_only=True)
-    reviewer = UserMiniSerializer(read_only=True)
+    business_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    reviewer = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Review
@@ -53,21 +53,14 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "reviewer",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["id", "reviewer", "created_at", "updated_at"]
 
     def validate(self, attrs):
-        """Validate that the target user is a business user."""
-        validate_business_user_is_business(attrs.get('business_user'))
+        validate_business_user_is_business(attrs.get("business_user"))
         return attrs
 
     def create(self, validated_data):
-        """Create a review and set the authenticated user as reviewer."""
-        request = self.context['request']
+        request = self.context["request"]
         return Review.objects.create(reviewer=request.user, **validated_data)
 
 
