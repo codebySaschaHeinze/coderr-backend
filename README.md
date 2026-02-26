@@ -318,10 +318,10 @@ DEBUG=1
 python manage.py migrate
 ```
 
-### 5) Create guest users (customer and business)
+### 5) Seed demo data (guest users, offers, orders, reviews)
 
 ```text
-python manage.py seed_guest_user
+python manage.py seed_all
 ```
 
 ### 6) Start server
