@@ -1,7 +1,17 @@
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from reviews_app.models import Review
 from .validators import validate_business_user_is_business
+
+
+User = get_user_model()
+
+
+class UserMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "file"]
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -29,20 +39,25 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating reviews."""
 
+    business_user = UserMiniSerializer(read_only=True)
+    reviewer = UserMiniSerializer(read_only=True)
+
     class Meta:
         model = Review
         fields = [
-            'id',
-            'business_user',
-            'rating',
-            'description',
-            'created_at',
-            'updated_at',
+            "id",
+            "business_user",
+            "reviewer",
+            "rating",
+            "description",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = [
-            'id',
-            'created_at',
-            'updated_at',
+            "id",
+            "reviewer",
+            "created_at",
+            "updated_at",
         ]
 
     def validate(self, attrs):
