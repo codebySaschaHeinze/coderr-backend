@@ -15,13 +15,13 @@ class Command(BaseCommand):
 
         guest_accounts = [
             {
-                'username': 'andrey',
+                'username': 'Andrey',
                 'password': 'asdasd',
                 'email': 'andrey@example.com',
                 'user_type': 'customer',
             },
             {
-                'username': 'kevin',
+                'username': 'Kevin',
                 'password': 'asdasd24',
                 'email': 'kevin@example.com',
                 'user_type': 'business',
