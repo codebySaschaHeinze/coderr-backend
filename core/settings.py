@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'orders_app',
     'reviews_app',
     'baseinfo_app',
+    'core',
 
 ]
 

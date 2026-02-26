@@ -40,10 +40,10 @@ class Command(BaseCommand):
         Existing users are updated to ensure credentials and user type stay in
         sync with the frontend guest login configuration.
         """
-        user, created = user_model.objects.get_or_create(
-            username=username,
+        user, created = user_model.objects.update_or_create(
+            email=email,
             defaults={
-                'email': email,
+                'username': username,
                 'type': user_type,
             },
         )
