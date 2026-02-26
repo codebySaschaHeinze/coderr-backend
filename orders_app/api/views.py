@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -83,12 +84,14 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         return OrderSerializer
 
     def patch(self, request, *args, **kwargs):
-        """Update only the order status after validating the provided value."""
         order = self.get_object()
-        status_value = validate_order_status(request.data.get('status'))
 
+        if request.user != order.business_user:
+            raise PermissionDenied("You do not have permission to update this order.")
+
+        status_value = validate_order_status(request.data.get("status"))
         order.status = status_value
-        order.save(update_fields=['status', 'updated_at'])
+        order.save(update_fields=["status", "updated_at"])
         return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
 
 
