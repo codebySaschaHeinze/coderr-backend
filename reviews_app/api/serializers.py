@@ -39,7 +39,10 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating reviews."""
 
-    business_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    business_user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(type='business')
+        )
     reviewer = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
