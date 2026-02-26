@@ -1,6 +1,6 @@
 # Coderr Backend (Django REST Framework)
 
-Backend API for the Coderr frontend.  
+Backend API for the Coderr frontend (https://github.com/codebySaschaHeinze/coderr-frontend.git).  
 Provides token-based authentication, user profiles, offers (with package details), orders, reviews, and aggregated platform base info.
 
 ## Tech Stack
