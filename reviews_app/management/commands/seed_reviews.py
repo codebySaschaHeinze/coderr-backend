@@ -7,7 +7,7 @@ from reviews_app.models import Review
 
 User = get_user_model()
 
-SEED_PREFIX = "[SEED]"
+SEED_PREFIX = ""
 CUSTOMER_GUEST_EMAIL = "andrey@example.com"
 BUSINESS_GUEST_EMAIL = "kevin@example.com"
 
