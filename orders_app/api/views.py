@@ -2,7 +2,6 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -68,29 +67,35 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    lookup_field = "id"
-    lookup_url_kwarg = "id"
+    lookup_field = 'id'
+    lookup_url_kwarg = 'id'
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        if self.request.method == 'PATCH':
+            if getattr(self.request.user, 'type', None) == 'business':
+                return qs.filter(business_user=self.request.user)
+            return qs.none()
+
+        return qs
 
     def get_permissions(self):
         """Apply method-specific permissions for PATCH and DELETE actions."""
         if self.request.method == "PATCH":
             return [permissions.IsAuthenticated(), IsBusinessUser()]
 
-        if self.request.method == "DELETE":
+        if self.request.method == 'DELETE':
             return [permissions.IsAuthenticated(), IsStaffUser()]
 
         return [permissions.IsAuthenticated()]
 
     def patch(self, request, *args, **kwargs):
-        """Only the owning business user is allowed to update the status."""
         order = self.get_object() 
 
-        if request.user != order.business_user:
-            raise PermissionDenied("You do not have permission to update this order.")
-
-        status_value = validate_order_status(request.data.get("status"))
+        status_value = validate_order_status(request.data.get('status'))
         order.status = status_value
-        order.save(update_fields=["status", "updated_at"])
+        order.save(update_fields=['status', 'updated_at'])
 
         return Response(self.get_serializer(order).data, status=status.HTTP_200_OK)
 
