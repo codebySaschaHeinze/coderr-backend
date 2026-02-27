@@ -1,7 +1,8 @@
-from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -64,34 +65,27 @@ class OrdersView(generics.ListCreateAPIView):
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Retrieve, update status (PATCH), or delete (DELETE) a single order."""
-    
+
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     lookup_field = 'id'
     lookup_url_kwarg = 'id'
 
-    def get_queryset(self):
-        qs = super().get_queryset()
-
-        if self.request.method == 'PATCH':
-            if getattr(self.request.user, 'type', None) == 'business':
-                return qs.filter(business_user=self.request.user)
-            return qs.none()
-
-        return qs
-
     def get_permissions(self):
         """Apply method-specific permissions for PATCH and DELETE actions."""
-        if self.request.method == "PATCH":
+        if self.request.method == 'PATCH':
             return [permissions.IsAuthenticated(), IsBusinessUser()]
-
         if self.request.method == 'DELETE':
             return [permissions.IsAuthenticated(), IsStaffUser()]
-
         return [permissions.IsAuthenticated()]
 
     def patch(self, request, *args, **kwargs):
-        order = self.get_object() 
+        """Update order status."""
+        order_id = kwargs.get('id')
+        order = get_object_or_404(Order, id=order_id)
+
+        if request.user != order.business_user:
+            raise NotFound('Order not found.')
 
         status_value = validate_order_status(request.data.get('status'))
         order.status = status_value
