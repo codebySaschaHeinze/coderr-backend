@@ -48,10 +48,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
-        try:
-            review = serializer.save()
-        except Exception:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        review = serializer.save()
 
         return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
 

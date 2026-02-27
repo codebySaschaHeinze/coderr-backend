@@ -61,6 +61,11 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         validate_business_user_is_business(attrs.get("business_user"))
         return attrs
+    
+    def validate_rating(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError('Rating must be between 1 and 5.')
+        return value
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -76,3 +81,8 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
             'rating',
             'description',
         ]
+
+    def validate_rating(self, value):
+        if not 1 <= value <= 5:
+            raise serializers.ValidationError('Rating must be between 1 and 5.')
+        return value
