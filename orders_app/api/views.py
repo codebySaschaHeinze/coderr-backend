@@ -64,27 +64,26 @@ class OrdersView(generics.ListCreateAPIView):
 
 
 class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Retrieve, update status, or delete a single order."""
-
-    lookup_url_kwarg = 'id'
+    """Retrieve, update status (PATCH), or delete (DELETE) a single order."""
+    
     queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    lookup_field = "id"
+    lookup_url_kwarg = "id"
 
     def get_permissions(self):
-        """Apply method-specific permissions for patch and delete actions."""
-        if self.request.method == 'PATCH':
+        """Apply method-specific permissions for PATCH and DELETE actions."""
+        if self.request.method == "PATCH":
             return [permissions.IsAuthenticated(), IsBusinessUser()]
 
-        if self.request.method == 'DELETE':
+        if self.request.method == "DELETE":
             return [permissions.IsAuthenticated(), IsStaffUser()]
 
         return [permissions.IsAuthenticated()]
 
-    def get_serializer_class(self):
-        """Return the serializer used for order detail responses."""
-        return OrderSerializer
-
     def patch(self, request, *args, **kwargs):
-        order = self.get_object()
+        """Only the owning business user is allowed to update the status."""
+        order = self.get_object() 
 
         if request.user != order.business_user:
             raise PermissionDenied("You do not have permission to update this order.")
@@ -92,7 +91,8 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
         status_value = validate_order_status(request.data.get("status"))
         order.status = status_value
         order.save(update_fields=["status", "updated_at"])
-        return Response(OrderSerializer(order).data, status=status.HTTP_200_OK)
+
+        return Response(self.get_serializer(order).data, status=status.HTTP_200_OK)
 
 
 class OrderCountView(APIView):
