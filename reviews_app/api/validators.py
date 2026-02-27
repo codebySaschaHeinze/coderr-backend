@@ -14,9 +14,9 @@ def validate_business_user_is_business(business_user) -> None:
         raise serializers.ValidationError({'business_user': 'Muss ein Verkäufer sein.'})
 
 
-def validate_no_duplicate_review(exists: bool) -> None:
+def validate_no_duplicate_review(exists: bool):
     if exists:
-        raise PermissionDenied("Duplicate review not allowed.")
+        raise PermissionDenied("Only one review per business user is allowed.")
 
 
 def validate_only_allowed_patch_fields(request_data: dict, allowed_fields: set) -> None:
