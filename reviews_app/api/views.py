@@ -4,20 +4,15 @@ from rest_framework.response import Response
 
 from reviews_app.models import Review
 from .filters import ReviewFilter
-from .permissions import IsReviewOwner
+from .permissions import CanCreateReview, IsReviewOwner
 from .serializers import ReviewCreateSerializer, ReviewSerializer, ReviewUpdateSerializer
-from .validators import (
-    validate_customer_can_create_review,
-    validate_no_duplicate_review,
-    validate_only_allowed_patch_fields,
-)
+from .validators import validate_only_allowed_patch_fields
 
 
 class ReviewListCreateView(generics.ListCreateAPIView):
     """List reviews and allow authenticated customers to create reviews."""
 
     queryset = Review.objects.all().order_by('-updated_at')
-    permission_classes = [permissions.IsAuthenticated]
 
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_class = ReviewFilter
@@ -26,6 +21,15 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         'rating',
     ]
 
+    def get_permissions(self):
+        """
+        - GET: authenticated users
+        - POST: authenticated customers only, one review per business user
+        """
+        if self.request.method == 'POST':
+            return [permissions.IsAuthenticated(), CanCreateReview()]
+        return [permissions.IsAuthenticated()]
+
     def get_serializer_class(self):
         """Use create serializer for POST and read serializer otherwise."""
         if self.request.method == 'POST':
@@ -33,21 +37,10 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         return ReviewSerializer
 
     def create(self, request, *args, **kwargs):
-        """Create a review after role and duplicate checks."""
-        validate_customer_can_create_review(request.user)
-
-        business_user_id = request.data.get('business_user')
-        exists = bool(
-            business_user_id and Review.objects.filter(
-                business_user_id=business_user_id,
-                reviewer=request.user,
-            ).exists()
-        )
-        validate_no_duplicate_review(exists)
+        """Create a review."""
 
         serializer = self.get_serializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
-
         review = serializer.save()
 
         return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
