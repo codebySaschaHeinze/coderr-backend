@@ -1,5 +1,8 @@
 from django.apps import AppConfig
 
 
-class ProfileAppConfig(AppConfig):
-    name = 'profile_app'
+
+class ProfilesAppConfig(AppConfig):
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "profile_app"
+    verbose_name = "Profiles"
