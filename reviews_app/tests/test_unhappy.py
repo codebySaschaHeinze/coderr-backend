@@ -29,8 +29,8 @@ class ReviewTestsUnhappy(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_reviews_create_requires_customer_type_returns_401(self):
-        """Review creation by business user returns status 401."""
+    def test_reviews_create_requires_customer_type_returns_403(self):
+        """Review creation by business user returns status 403."""
         business_user_1 = User.objects.create_user(
             username='businessUser1',
             email='user@business1.com',
@@ -53,7 +53,7 @@ class ReviewTestsUnhappy(APITestCase):
             format='json',
         )
 
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_reviews_create_duplicate_review_returns_403(self):
         """Duplicate review creation for same business/reviewer returns status 403."""
