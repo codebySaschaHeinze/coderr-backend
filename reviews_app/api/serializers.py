@@ -39,36 +39,50 @@ class ReviewSerializer(serializers.ModelSerializer):
 class ReviewCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating reviews."""
 
-
     business_user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.filter(type='business')
-        )
+    )
     reviewer = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Review
         fields = [
-            "id",
-            "business_user",
-            "reviewer",
-            "rating",
-            "description",
-            "created_at",
-            "updated_at",
+            'id',
+            'business_user',
+            'reviewer',
+            'rating',
+            'description',
+            'created_at',
+            'updated_at',
         ]
-        read_only_fields = ["id", "reviewer", "created_at", "updated_at"]
+        read_only_fields = ['id', 'reviewer', 'created_at', 'updated_at']
 
     def validate(self, attrs):
-        validate_business_user_is_business(attrs.get("business_user"))
+        request = self.context['request']
+        user = request.user
+        business_user = attrs.get('business_user')
+
+        if getattr(user, 'type', None) != 'customer':
+            raise serializers.ValidationError(
+                {'detail': 'Only customers can create reviews.'}
+            )
+
+        validate_business_user_is_business(business_user)
+
+        if Review.objects.filter(business_user=business_user, reviewer=user).exists():
+            raise serializers.ValidationError(
+                {'detail': 'Only one review per business user is allowed.'}
+            )
+
         return attrs
-    
+
     def validate_rating(self, value):
         if not 1 <= value <= 5:
             raise serializers.ValidationError('Rating must be between 1 and 5.')
         return value
 
     def create(self, validated_data):
-        request = self.context["request"]
+        request = self.context['request']
         return Review.objects.create(reviewer=request.user, **validated_data)
 
 

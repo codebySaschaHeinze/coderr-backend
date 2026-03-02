@@ -16,28 +16,6 @@ class IsCustomerUser(BasePermission):
         )
 
 
-class CanCreateReview(BasePermission):
-    """Permission for creating reviews."""
-
-    def has_permission(self, request, view):
-        user = request.user
-
-        if not user or not user.is_authenticated:
-            return False
-
-        if getattr(user, 'type', None) != 'customer':
-            raise PermissionDenied('Only customers can create reviews.')
-
-        business_user_id = request.data.get('business_user')
-        if business_user_id and Review.objects.filter(
-            business_user_id=business_user_id,
-            reviewer=user,
-        ).exists():
-            raise PermissionDenied('Only one review per business user is allowed.')
-
-        return True
-
-
 class IsReviewOwner(BasePermission):
     """Allow access only to the owner of the review object."""
 

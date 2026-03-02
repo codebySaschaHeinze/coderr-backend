@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from reviews_app.models import Review
 from .filters import ReviewFilter
-from .permissions import CanCreateReview, IsReviewOwner
+from .permissions import IsReviewOwner
 from .serializers import ReviewCreateSerializer, ReviewSerializer, ReviewUpdateSerializer
 from .validators import validate_only_allowed_patch_fields
 
@@ -27,7 +27,7 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         - POST: authenticated customers only, one review per business user
         """
         if self.request.method == 'POST':
-            return [permissions.IsAuthenticated(), CanCreateReview()]
+            return [permissions.IsAuthenticated()]
         return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
