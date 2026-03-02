@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from reviews_app.models import Review
 from .filters import ReviewFilter
-from .permissions import IsReviewOwner
+from .permissions import CanCreateReview, IsReviewOwner
 from .serializers import ReviewCreateSerializer, ReviewSerializer, ReviewUpdateSerializer
 from .validators import validate_only_allowed_patch_fields
 
@@ -26,8 +26,9 @@ class ReviewListCreateView(generics.ListCreateAPIView):
         - GET: authenticated users
         - POST: authenticated customers only, one review per business user
         """
+
         if self.request.method == 'POST':
-            return [permissions.IsAuthenticated()]
+            return [permissions.IsAuthenticated(), CanCreateReview()]
         return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
@@ -55,6 +56,7 @@ class ReviewDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         """Require ownership for patch/delete and authentication for reads."""
+    
         if self.request.method in ('PATCH', 'DELETE'):
             return [permissions.IsAuthenticated(), IsReviewOwner()]
         return [permissions.IsAuthenticated()]
