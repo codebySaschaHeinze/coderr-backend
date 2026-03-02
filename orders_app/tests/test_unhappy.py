@@ -246,3 +246,17 @@ class OrderTestsUnhappy(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertTrue(res.data)
+
+    def test_order_patch_invalid_id_as_business_returns_404(self):
+        business_user = User.objects.create_user(
+            username='businessUser',
+            email='user@business.com',
+         password='test123',
+            type='business',
+        )
+        self.client.force_authenticate(user=business_user)
+
+        url = reverse('order-detail', kwargs={'id': 999999999999})
+        res = self.client.patch(url, {'status': 'completed'}, format='json')
+
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
