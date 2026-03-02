@@ -58,7 +58,17 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'reviewer', 'created_at', 'updated_at']
 
     def validate(self, attrs):
-        validate_business_user_is_business(attrs.get('business_user'))
+        request = self.context['request']
+        user = request.user
+        business_user = attrs.get('business_user')
+
+        validate_business_user_is_business(business_user)
+
+        if Review.objects.filter(business_user=business_user, reviewer=user).exists():
+            raise serializers.ValidationError(
+                {'detail': 'Only one review per business user is allowed.'}
+            )
+
         return attrs
 
     def validate_rating(self, value):
