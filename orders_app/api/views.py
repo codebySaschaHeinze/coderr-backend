@@ -2,12 +2,12 @@ from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from orders_app.models import Order
-from .permissions import IsBusinessUser, IsStaffUser
+from .permissions import IsStaffUser
 from .serializers import OrderCreateSerializer, OrderSerializer
 from .validators import (
     get_offer_detail_or_404,
@@ -72,20 +72,19 @@ class OrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'id'
 
     def get_permissions(self):
-        """Apply method-specific permissions for PATCH and DELETE actions."""
-        if self.request.method == 'PATCH':
-            return [permissions.IsAuthenticated(), IsBusinessUser()]
         if self.request.method == 'DELETE':
             return [permissions.IsAuthenticated(), IsStaffUser()]
         return [permissions.IsAuthenticated()]
 
     def patch(self, request, *args, **kwargs):
-        """Update order status."""
         order_id = kwargs.get('id')
         order = get_object_or_404(Order, id=order_id)
 
+        if getattr(request.user, 'type', None) != 'business':
+            raise PermissionDenied('Only business users can update orders.')
+
         if request.user != order.business_user:
-            raise NotFound('Order not found.')
+            raise PermissionDenied('You do not have permission to update this order.')
 
         status_value = validate_order_status(request.data.get('status'))
         order.status = status_value
