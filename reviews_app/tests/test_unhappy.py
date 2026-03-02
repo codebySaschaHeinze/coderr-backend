@@ -56,8 +56,8 @@ class ReviewTestsUnhappy(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
         self.assertIn('detail', res.data)
 
-    def test_reviews_create_duplicate_review_returns_403(self):
-        """Duplicate review creation for same business/reviewer returns status 403."""
+    def test_reviews_create_duplicate_review_returns_400(self):
+        """Duplicate review creation for same business/reviewer returns status 400."""
         customer_user = User.objects.create_user(
             username='CustomerUser',
             email='user@customer.com',
@@ -83,7 +83,7 @@ class ReviewTestsUnhappy(APITestCase):
         self.client.post(url, payload, format='json')
         res = self.client.post(url, payload, format='json')
 
-        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('detail', res.data)
 
     def test_reviews_create_business_user_must_be_business_returns_400(self):
