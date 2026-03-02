@@ -11,7 +11,7 @@ User = get_user_model()
 class UserMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "file"]
+        fields = ['id', 'username', 'file']
 
 
 class ReviewSerializer(serializers.ModelSerializer):
