@@ -54,7 +54,7 @@ class ReviewTestsUnhappy(APITestCase):
         )
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", res.data)
+        self.assertIn('detail', res.data)
 
     def test_reviews_create_duplicate_review_returns_400(self):
         """Duplicate review creation for same business/reviewer returns status 403."""
@@ -84,7 +84,7 @@ class ReviewTestsUnhappy(APITestCase):
         res = self.client.post(url, payload, format='json')
 
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("detail", res.data)
+        self.assertIn('detail', res.data)
 
     def test_reviews_create_business_user_must_be_business_returns_400(self):
         """Review creation with non-business target returns status 400."""
