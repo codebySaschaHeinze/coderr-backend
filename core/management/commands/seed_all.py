@@ -15,22 +15,18 @@ class Command(BaseCommand):
         count_orders = options["count_orders"]
         rnd_seed = options["seed"]
 
-        # 1) Users first
         call_command("seed_guest_users")
 
-        # 2) Offers (if you have it)
         if reset:
             call_command("seed_offers", reset=True, seed=rnd_seed)
         else:
             call_command("seed_offers")
 
-        # 3) Orders
         if reset:
             call_command("seed_orders", reset=True, count=count_orders, seed=rnd_seed)
         else:
             call_command("seed_orders", count=count_orders, seed=rnd_seed)
 
-        # 4) Reviews
         if reset:
             call_command("seed_reviews", reset=True, seed=rnd_seed)
         else:
